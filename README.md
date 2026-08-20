@@ -14,8 +14,8 @@
 ## 现状结论（一句话）
 
 **模型方法在北天自洽有效（Model B 准确率 97.7%、宿主召回率 87.3%），
-但模型 A 仅接受光学输入（PS 5波段+WISE），验证组合只有"光学+北天"（✅ 正常）
-与"光学+南天"（❌ 退化）两个——当前模型只适用于 SDSS 北天训练分布，
+但模型 A 仅接受光学输入（PS 5波段+WISE），验证组合只有"光学+北天"（正常）
+与"光学+南天"（退化）两个——当前模型只适用于 SDSS 北天训练分布，
 南天迁移和射电选源（RGZ）都需要重新训练。**
 
 ## 文档索引（精简后 4+2 个文档）
@@ -28,7 +28,7 @@
 | [docs/DATA_REGISTRY.md](docs/DATA_REGISTRY.md) | **数据登记表**：所有数据批次（来源/日期/参数/规模），下载前先查，避免重复获取 |
 | [docs/DATA_GAPS.md](docs/DATA_GAPS.md) | **数据缺口清单**（汇报用）：对照论文缺什么数据、缺因、获取途径 |
 | [docs/STRUCTURE_CHANGELOG.md](docs/STRUCTURE_CHANGELOG.md) | 2026-07-31 目录重构映射表（旧路径→新路径） |
-| [docs/GITHUB_SHARING_PLAN.md](docs/GITHUB_SHARING_PLAN.md) | ⭐ GitHub 共享改造方案（已记录待执行：路径修复/权重方式/协作策略） |
+| [docs/GITHUB_SHARING_PLAN.md](docs/GITHUB_SHARING_PLAN.md) | GitHub 共享改造方案（已记录待执行：路径修复/权重方式/协作策略） |
 | [docs/training_notes/evaluation_report.md](docs/training_notes/evaluation_report.md) | CDFS 评估报告（脚本生成） |
 
 ---
@@ -36,7 +36,7 @@
 ## 方法：两阶段、多模态的堆叠模型（概要）
 
 ```
-  模型 A: CelestialClassficationNet — ⚠️ 仅光学输入 (PS 5波段图 + 2个WISE星等)
+  模型 A: CelestialClassficationNet —  仅光学输入 (PS 5波段图 + 2个WISE星等)
           → 输出 [Galaxy, QSO, STAR] 三分类概率
   模型 B: RadioOpticalCrossmatchModel — 射电切图(仅属于B) + PS背景图 + A的3类概率 + 位置特征
           → 输出 [非宿主, 宿主] 二分类概率
@@ -47,7 +47,7 @@
 
 ---
 
-## 交接核心文件（本科生只需先看这些）
+## 一部分核心文件核心文件
 
 | 文件 | 作用 |
 |---|---|
@@ -66,24 +66,24 @@
 
 ## 资产清单：什么在、什么不在
 
-✅ **训练好的权重**（`crossmatch/models/`，可直接推理，无需重训）
+**训练好的权重**（`crossmatch/models/`，可直接推理，无需重训）
 - `opt_classification_model_wts.pt`（45MB，模型 A）
 - `RGZ_all_negative_crossmatch_model_wts.pt`（90MB，模型 B 主用版）
 - `RGZ1_1 / RGZ3_1 / RGZ_ROGUE1000 / RGZ_ROGUE_crossmatch_model_wts.pt`（负样本策略对比用）
 
-✅ **训练/测试星表（位置+标签）**：`data/catalogs/preprocessed_cat/`
+ **训练/测试星表（位置+标签）**：`data/catalogs/preprocessed_cat/`
 - 正样本（宿主）：`PS_p_RGZ_samples.csv`、`PS_p_Norris06_samples.csv`(测试集) …
 - 负样本（假宿主）：`PS_n_samples_RGZ_all.csv`、`PS_n_Norris06_samples.csv` …
 
-✅ **SDSS 三分类标签**（模型 A 的标签来源）：`data/catalogs/SDSS_clean_cat/SDSSxWISE_cat.tbl`(1.3GB)/`data/catalogs/SDSS_clean_cat_Duncan.csv`
-✅ **WISE 交叉认证表**：`data/catalogs/*_wise_crossmatched.tbl`
-✅ **射电形态/宿主真值等**：在 `~/Desktop/VLASS/`（`images_with_label/`、`2_Host_ID_Table/`）
+ **SDSS 三分类标签**（模型 A 的标签来源）：`data/catalogs/SDSS_clean_cat/SDSSxWISE_cat.tbl`(1.3GB)/`data/catalogs/SDSS_clean_cat_Duncan.csv`
+ **WISE 交叉认证表**：`data/catalogs/*_wise_crossmatched.tbl`
+ **射电形态/宿主真值等**：在 `~/Desktop/VLASS/`（`images_with_label/`、`2_Host_ID_Table/`）
 
-❌ **唯一缺失：原始下载的切图图像**（模型真正吃的 fits 立方体）
+ **唯一缺失：原始下载的切图图像**（模型真正吃的 fits 立方体）
 - 光学切图曾在 `/Volumes/Expansion/VLASS/sources_for_Sean`（Expansion 移动硬盘，**当前未挂载**）
 - 射电+PS 切图曾在 Linux 服务器 `/mnt/DataDisk/Duncan/Pan-STARRS_Big_Cutouts/`（**已废弃**）
 - 影响：① 想**重训**得按星表重下切图；② 但若只做**推理/应用 EMU**，只需为 EMU 新目标下载切图，现有权重可直接用。
-- ⭐ 先做的事：把 **Expansion 硬盘**插上看看 `sources_for_Sean` 还在不在——在的话连重下都省了。
+-  先做的事：把 **Expansion 硬盘**插上看看 `sources_for_Sean` 还在不在——在的话连重下都省了。
 
 ---
 
