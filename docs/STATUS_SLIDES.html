@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>GalaxyClassifier 项目现状汇报</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif; background: #1a1a2e; color: #eee; overflow: hidden; }
+  .deck { width: 100vw; height: 100vh; position: relative; }
+  .slide { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center;
+           padding: 6vh 8vw; opacity: 0; pointer-events: none; transition: opacity .35s; }
+  .slide.active { opacity: 1; pointer-events: auto; }
+  h1 { font-size: 2.6rem; margin-bottom: .6em; color: #fff; }
+  h2 { font-size: 1.9rem; margin-bottom: .8em; color: #7ec8e3; border-bottom: 2px solid #7ec8e3; padding-bottom: .25em; }
+  h3 { font-size: 1.3rem; margin: .8em 0 .4em; color: #ffd166; }
+  p, li { font-size: 1.15rem; line-height: 1.7; }
+  ul { margin-left: 1.5em; }
+  li { margin: .3em 0; }
+  table { border-collapse: collapse; margin: 1em 0; width: 100%; font-size: 1.05rem; }
+  th, td { border: 1px solid #4a4a6a; padding: .45em .8em; text-align: left; }
+  th { background: #2d2d4a; color: #7ec8e3; }
+  tr:nth-child(even) td { background: #23233c; }
+  .sub { color: #9aa; font-size: .95rem; margin-top: .4em; }
+  .hl { color: #ffd166; font-weight: bold; }
+  .warn { color: #ff6b6b; }
+  .ok { color: #6bcb77; }
+  .nav { position: fixed; bottom: 2vh; right: 3vw; color: #667; font-size: .85rem; z-index: 10; }
+  .pagenum { position: fixed; bottom: 2vh; left: 3vw; color: #667; font-size: .85rem; z-index: 10; }
+  .title-big { font-size: 3.2rem; color: #fff; }
+  .title-sub { font-size: 1.4rem; color: #9aa; margin-top: .5em; }
+  .flex2 { display: flex; gap: 2em; }
+  .flex2 > div { flex: 1; }
+  .kbd { display: inline-block; border: 1px solid #4a4a6a; border-radius: 4px; padding: 0 .4em; margin: 0 .2em; font-size: .9em; }
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1. 封面 -->
+  <section class="slide active">
+    <div class="title-big">GalaxyClassifier 项目现状汇报</div>
+    <div class="title-sub">射电源光学宿主识别 · 两阶段堆叠模型</div>
+    <p class="sub" style="margin-top:2em">2026-08-09</p>
+    <p class="sub">VLASS 射电 + PanSTARRS 光学 + WISE 红外 · 模型A（光学三分类）→ 模型B（宿主认证）</p>
+  </section>
+
+  <!-- 2. 模型B独立验证 -->
+  <section class="slide">
+    <h2>一、模型 B 独立验证</h2>
+    <h3>历史验证（CDFS / Norris06 测试集）</h3>
+    <table>
+      <tr><th>指标</th><th>数值</th></tr>
+      <tr><td>准确率</td><td class="hl">97.7%</td></tr>
+      <tr><td>宿主召回率</td><td>87.3%（62/71）</td></tr>
+      <tr><td>非宿主特异性</td><td>98.3%（1250/1272）</td></tr>
+      <tr><td>宿主/非宿主概率分离</td><td>0.646 vs 0.016（分离度极佳）</td></tr>
+    </table>
+    <h3>本轮独立复验（2026-08-06，北天 RGZ 确认宿主）</h3>
+    <ul>
+      <li><span class="hl">数据</span>：RGZ DR1 公民科学高置信标签（N_votes≥10、CL≥0.7），FIRST 射电选源、Dec>10 北天区，候选池 42658 源，随机抽样 10 源，7 源完成推理</li>
+      <li><span class="hl">方式</span>：第三套独立样本复验（区别于 CDFS/Norris06 测试集），手动输入各源三分类概率（GALAXY/QSO/STAR）后经模型 B 推理，全链路本地完成</li>
+      <li><span class="ok">结果</span>：7/7 宿主全部正确识别（Host Recall 100%）；host_prob 均值 0.611、范围 0.608~0.615，全部高于 0.5 阈值</li>
+      <li><span class="warn">局限</span>：样本量小且全为正样本（仅能验证召回，无法评估误报率/精确率）；host_prob 集中窄带、贴近阈值，正式部署需校准；仅覆盖北天 SDSS 分布</li>
+    </ul>
+  </section>
+
+  <!-- 3. 模型A替换：动机 -->
+  <section class="slide">
+    <h2>二、模型 A 替换实验（XGBoost）——动机</h2>
+    <ul>
+      <li><span class="warn">原版 CNN 模型 A 退化</span>：对 7 个北天 RGZ 宿主全部输出 STAR≈0.99，逐源零判别力（射电选源超出 SDSS 训练分布）</li>
+      <li>模型 A 训练切图已丢失，重训需全部重新下载，成本高</li>
+      <li>模型 A 在管线中仅提供三类概率 → 用<span class="hl">光度学特征 + 树模型</span>可完全替代，彻底摆脱图像依赖</li>
+      <li>方案：XGBoost 在 SDSSxWISE 全表（394 万行光谱标签）上训练三分类</li>
+    </ul>
+  </section>
+
+  <!-- 4. XGBoost-A v1 结果 -->
+  <section class="slide">
+    <h2>三、XGBoost-A v1（WISE-only）结果</h2>
+    <div class="flex2">
+      <div>
+        <h3>训练</h3>
+        <ul>
+          <li>抽样 60 万行（每类 20 万），8:2 划分</li>
+          <li>特征：W1、W2 星等 + W1-W2 颜色</li>
+          <li>训练耗时：<span class="hl">8 秒</span>（纯星表、无 GPU）</li>
+          <li>模型体积：1.6MB</li>
+        </ul>
+        <h3>特征重要性</h3>
+        <ul>
+          <li>W1-W2 颜色：0.56</li>
+          <li>W1 星等：0.27 / W2 星等：0.17</li>
+        </ul>
+        <h3>实例（W1-W2 判据）</h3>
+        <ul>
+          <li>J165708：W1-W2=+0.76 → 判 QSO（0.97）</li>
+          <li>J170204：W1-W2=-0.03 → 判恒星（0.94）</li>
+        </ul>
+      </div>
+      <div>
+        <h3>三分类验证（19.7 万行）</h3>
+        <table>
+          <tr><th>真值 \ 预测</th><th>GALAXY</th><th>QSO</th><th>STAR</th></tr>
+          <tr><td>GALAXY</td><td>80.0%</td><td>3.3%</td><td>16.7%</td></tr>
+          <tr><td>QSO</td><td>2.2%</td><td class="hl">93.7%</td><td>4.2%</td></tr>
+          <tr><td>STAR</td><td>21.5%</td><td>3.6%</td><td>74.9%</td></tr>
+        </table>
+        <p>总准确率 <span class="hl">82.9%</span>；QSO 识别强（W1-W2 为 QSO 色选判据）</p>
+        <p class="warn">GALAXY↔STAR 互混为 WISE 无光学波段的物理限制</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 新旧模型对比 -->
+  <section class="slide">
+    <h2>四、新旧模型对比（CNN-A → XGBoost-A）</h2>
+    <table>
+      <tr><th style="width:14%">维度</th><th style="width:43%">旧模型 CNN-A</th><th style="width:43%">新模型 XGBoost-A</th></tr>
+      <tr><td>识别数据选取</td><td>5 波段光学切图 + W1/W2 星等；重训需重新下载全部切图</td><td class="ok">仅 3 个星表数值：W1/W2 星等 + W1-W2 颜色；零图像依赖</td></tr>
+      <tr><td>识别能力</td><td class="warn">7 源全部判 STAR≈0.99，逐源无区分</td><td class="ok">逐源可解释，QSO/星系判定与 W1-W2 物理判据一致</td></tr>
+      <tr><td>最终结果（三分类验证）</td><td class="warn">射电选源上分类失效</td><td class="ok">验证准确率 82.9%，QSO 召回 93.7%</td></tr>
+    </table>
+    <p class="sub">结论：新模型 A 分类可靠、输出可解释，数据需求从 5 波段切图降为 3 个星表数值</p>
+  </section>
+
+  <!-- 6. v2 计划 -->
+  <section class="slide">
+    <h2>五、XGBoost-A v2（WISE + 光学特征）——进行中</h2>
+    <ul>
+      <li>设计：加入 SDSS ugriz 光度（5 psfMag + 4 颜色 + 形态代理）</li>
+      <li>目标：拆掉 GALAXY↔STAR 混淆，预期 82.9% → 90%+</li>
+      <li>工具链<span class="ok">已就绪</span>：批量拉取脚本（断点续存）、v2 训练脚本、9 万源坐标表</li>
+      <li>评估：沿用 v1 端到端流程，与 CNN 版、v1 三方对比</li>
+    </ul>
+  </section>
+
+  <!-- 7. 当前阻塞 -->
+  <section class="slide">
+    <h2>六、当前阻塞：SDSS 光度数据拉取被限流</h2>
+    <table>
+      <tr><th>数据源</th><th>状态</th></tr>
+      <tr><td>官方 SDSS（dr16/dr18）</td><td class="warn">限流 25+ 小时未解除（连接正常、查询静默返回空）</td></tr>
+      <tr><td>China-VO CasJobs</td><td>服务已停止</td></tr>
+      <tr><td>China-VO skyserver 镜像</td><td>无可用 API</td></tr>
+      <tr><td>MAST PS1 星表</td><td>网络不可达</td></tr>
+      <tr><td>CDS VizieR（含国内镜像）</td><td>503 / 服务失效</td></tr>
+    </table>
+    <p><span class="hl">影响范围：仅 v2 训练数据获取</span>；已完成的验证、推理管线、v1 模型均不受影响</p>
+  </section>
+
+  <!-- 8. 下一步 -->
+  <section class="slide">
+    <h2>七、下一步计划</h2>
+    <h3>短期（数据恢复后）</h3>
+    <ul>
+      <li>拉取 9 万源 SDSS 光度（脚本就绪，断点续存）→ 训练 v2 → 端到端三方对比</li>
+      <li>备选：用本地 PS 切图为评估源提取光学特征，端到端演示不依赖服务器</li>
+    </ul>
+    <h3>长期（EMU 迁移）</h3>
+    <ul>
+      <li>南天光学巡天（DES/DELVE/SkyMapper）光度路线；XGBoost-A 结构天然适配星表迁移</li>
+      <li>射电预处理常数按 ASKAP/EMU 分辨率重新标定</li>
+    </ul>
+  </section>
+
+</div>
+<div class="pagenum" id="pagenum">1 / 8</div>
+<div class="nav">方向键 <span class="kbd">←</span> <span class="kbd">→</span> 翻页 · 全屏 <span class="kbd">F11</span></div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let cur = 0;
+  function show(i) {
+    cur = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, k) => s.classList.toggle('active', k === cur));
+    document.getElementById('pagenum').textContent = (cur + 1) + ' / ' + slides.length;
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') show(cur + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') show(cur - 1);
+    if (e.key === 'Home') show(0);
+    if (e.key === 'End') show(slides.length - 1);
+  });
+  document.addEventListener('click', e => show(cur + 1));
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+torch version:  1.11.0+cu102
+using device: cuda:0
+Train set size:  2654
+Validation set size:  664
+Test set size:  142
+total_step: 332
+Epoch 1/10
+----------
+train Loss: 0.883934 Acc: 0.907687
+val Loss: 0.204973 Acc: 0.960843
+Epoch 2/10
+----------
+train Loss: 0.072414 Acc: 0.981161
+val Loss: 0.569903 Acc: 0.936747
+Epoch 3/10
+----------
+train Loss: 0.055636 Acc: 0.985305
+val Loss: 0.037351 Acc: 0.992470
+Epoch 4/10
+----------
+train Loss: 0.050328 Acc: 0.987566
+val Loss: 0.057107 Acc: 0.986446
+Epoch 5/10
+----------
+train Loss: 0.048392 Acc: 0.989450
+val Loss: 0.150013 Acc: 0.971386
+Epoch 6/10
+----------
+train Loss: 0.043939 Acc: 0.988696
+val Loss: 0.054363 Acc: 0.984940
+Epoch 7/10
+----------
+train Loss: 0.038999 Acc: 0.991711
+val Loss: 0.017415 Acc: 0.993976
+Epoch 8/10
+----------
+train Loss: 0.039195 Acc: 0.990203
+val Loss: 0.403778 Acc: 0.835843
+Epoch 9/10
+----------
+train Loss: 0.041048 Acc: 0.990203
+val Loss: 0.021108 Acc: 0.995482
+Epoch 10/10
+----------
+train Loss: 0.033401 Acc: 0.991711
+val Loss: 0.027401 Acc: 0.995482
+Training complete in 15m 29s
+Best val Acc: 0.995482
+confusion_matrix:  tensor([[68.,  3.],
+        [ 8., 63.]])
+tensor([0.9577, 0.8873])
+accuracy over all:  0.9225352112676056

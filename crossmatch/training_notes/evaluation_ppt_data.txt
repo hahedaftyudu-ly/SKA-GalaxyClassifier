@@ -1,0 +1,23 @@
+==================================================
+GALAXYCLASSIFIER CDFS VALIDATION — PPT KEY NUMBERS
+==================================================
+
+Overall Accuracy: 93.3%
+Precision: 0.0%
+Recall: 0.0%
+F1: 0.0%
+
+Confusion: TP=0, TN=181, FP=2, FN=11
+Total samples: 194
+
+Stratified Accuracy:
+  Unclassified: 88.9% (16/18)
+  AGN/QSO: 92.7% (102/110)
+  Galaxy/ELG: 97.0% (32/33)
+  ULIRG: 100.0% (4/4)
+  Composite: 90.9% (10/11)
+
+Data: VLASS radio 51/71, PS optical 71/71
+Norris crossmatch: 45/71 matched
+
+==================================================

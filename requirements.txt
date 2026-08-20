@@ -1,0 +1,28 @@
+# Python 3.12 / torch 2.x 可用版本。
+# 原来锁 torch 1.10 / tensorflow 2.7（Python 3.8 时代），已更新。
+# 已移除：tensorflow（代码从未 import）、ray（仅被删掉的 main_new.py 用）、
+#         torchsummary（仅出现在被删的注释代码里）。
+
+# 深度学习
+torch>=2.2
+torchvision>=0.17
+
+# 科学计算
+numpy>=1.26
+pandas>=2.0
+scipy>=1.11
+scikit-learn>=1.3
+scikit-image>=0.22
+matplotlib>=3.8
+seaborn>=0.13
+Pillow>=10.0
+xgboost>=2.0            # XGBoost 模型A (tools/train_xgboost_model_a.py)
+
+# 天文
+astropy>=6.0
+photutils>=1.10        # 注意：detect_threshold/detect_sources 已移到 photutils.segmentation（代码已改）
+astroquery>=0.4.7
+panstamps>=0.6         # 下载 PanSTARRS stack 切图
+
+# 其他
+requests>=2.31

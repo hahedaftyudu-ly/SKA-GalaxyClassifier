@@ -1,0 +1,77 @@
+# ============================================================
+# GalaxyClassifier .gitignore
+# 数据/切图/权重存服务器, 不上 GitHub
+# 仓库 = 代码 + 文档 + 权重(Releases 方式)
+# ============================================================
+
+# ---- IDE / 系统 ----
+/.idea
+.idea
+/images14/
+/runs/
+notebooks/runs/
+!/test_file.py
+
+# ---- 数据 (服务器存储, 仅保留 .gitkeep 占位) ----
+data/*
+!data/.gitkeep
+!data/catalogs/
+!data/cache/
+!data/logs/
+data/catalogs/*
+!data/catalogs/.gitkeep
+!data/catalogs/preprocessed_cat/
+!data/catalogs/SDSS_clean_cat/
+data/catalogs/preprocessed_cat/*
+!data/catalogs/preprocessed_cat/.gitkeep
+data/catalogs/SDSS_clean_cat/*
+!data/catalogs/SDSS_clean_cat/.gitkeep
+data/cache/*
+!data/cache/.gitkeep
+data/logs/*
+!data/logs/.gitkeep
+
+# ---- 切图 (服务器存储, 仅保留 .gitkeep 占位) ----
+source_cutouts/*
+!source_cutouts/.gitkeep
+!source_cutouts/cdfs/
+!source_cutouts/north/
+!source_cutouts/south_test/
+source_cutouts/cdfs/*
+!source_cutouts/cdfs/.gitkeep
+source_cutouts/north/*
+!source_cutouts/north/.gitkeep
+source_cutouts/south_test/*
+!source_cutouts/south_test/.gitkeep
+
+# ---- 权重 (走 GitHub Releases, 不进仓库) ----
+*.pt
+*.pth
+*.ckpt
+crossmatch/models/*
+!crossmatch/models/.gitkeep
+
+# ---- 大二进制 / 星表 ----
+*.fits
+*.fit
+*.jpeg
+*.jpg
+*.png
+*.tbl
+*.h5
+*.zip
+crossmatch/catalogs/
+crossmatch/PS_n_samples_RGZ_all.csv
+crossmatch/wrongly_predicted_ps/
+crossmatch/wrongly_predicted_radio_components_cutoutResults/
+
+# ---- 运行时产物 ----
+__pycache__/
+*.pyc
+*.log
+.tmp*/
+validation_report.html
+validation_report.pdf
+accuracy_vs_*
+*.tfevents.*
+*~origin_master
