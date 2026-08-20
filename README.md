@@ -1,3 +1,3 @@
 # SKA-GalaxyClassifier
-fight
-readme文件待完善，代码规范正在完善。。。
+
+main branch待完善，代码以及目前保存在feature/emu_test branch下
