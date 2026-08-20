@@ -1,8 +1,14 @@
 # GitHub 共享改造方案 (GITHUB_SHARING_PLAN.md)
 
-> 创建：2026-08-03 | 状态：**已记录, 暂未执行**
+> 创建：2026-08-03 | 状态：**执行中 (2026-08: 本地提交就绪, 待 push)**
 > 目标：与合作伙伴通过 GitHub 共享代码/权重/文档；具体数据（星表、切图）存服务器, 不上传 GitHub。
 > 触发执行条件：合作方确认仓库结构后。
+
+**执行记录 (2026-08)**：
+- 仓库：`https://github.com/hahedaftyudu-ly/SKA-GalaxyClassifier`
+- 分支：`feature/emu-test`（本地 2 个提交：代码+文档 2.3MB / 权重 641MB）
+- 权重决策：**方式 A（直接进仓库）**——8 个权重全部 <100MB 单文件限制
+- 待办：`git push -u origin feature/emu-test`（需本机 Git Credential Manager 登录，沙箱内无法弹认证框）
 
 ---
 
